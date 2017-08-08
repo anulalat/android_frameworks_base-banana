@@ -305,15 +305,19 @@ public class SurfaceUtils {
 
     private static boolean isPrivilegedApp() {
         String packageName = ActivityThread.currentOpPackageName();
-        List<String> packageList = new ArrayList<>(Arrays.asList(
-                SystemProperties.get("persist.vendor.camera.privapp.list", ",").split(",")));
+        String packageList = SystemProperties.get("persist.vendor.camera.privapp.list");
 
-        // Append packages from framework resources
-        Resources res = ActivityThread.currentApplication().getResources();
-        packageList.addAll(Arrays.asList(res.getStringArray(
-                com.android.internal.R.array.config_cameraHFRPrivAppList)));
+        if (packageList.length() > 0) {
+            TextUtils.StringSplitter splitter = new TextUtils.SimpleStringSplitter(',');
+            splitter.setString(packageList);
+            for (String str : splitter) {
+                if (packageName.equals(str)) {
+                    return true;
+                }
+            }
+        }
 
-        return packageList.contains(packageName);
+        return false;
     }
 
     private static native int nativeDetectSurfaceType(Surface surface);
